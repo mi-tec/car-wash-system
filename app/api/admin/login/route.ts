@@ -1,6 +1,5 @@
 import prisma from "@/lib/prisma";
 import * as argon2 from "argon2";
-import Redis from "ioredis";
 import jwt from "jsonwebtoken";
 import { cookies } from "next/headers";
 
@@ -52,15 +51,6 @@ export async function POST(request: Request) {
   }
 
   const accessToken = jwt.sign({ userId: user.id }, process.env.JWT_SECRET!, { expiresIn: "1d" });
-  const refreshToken = crypto.randomUUID();
-
-  const redis = new Redis(process.env.REDIS_URL!);
-  await redis.set(
-    `refresh_token:${refreshToken}`,
-    JSON.stringify({ userId: user.id, email: user.email, name: user.name }),
-    "EX",
-    60 * 60 * 24,
-  );
 
   (await cookies()).set("accessToken", accessToken, {
     httpOnly: true,
